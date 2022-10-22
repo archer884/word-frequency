@@ -5,11 +5,12 @@ use hashbrown::HashMap;
 use natural::tokenize::tokenize;
 
 #[derive(Debug, Parser)]
+#[command(version)]
 struct Args {
-    // path to manuscript text
+    /// path to manuscript text
     path: String,
 
-    // the target word
+    /// the target word
     word: String,
 }
 
