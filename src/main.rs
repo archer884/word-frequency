@@ -1,4 +1,4 @@
-use std::{borrow::Cow, fs, io, process};
+use std::{fs, io, process};
 
 use clap::Parser;
 use hashbrown::HashMap;
@@ -10,18 +10,8 @@ struct Args {
     /// path to manuscript text
     path: String,
 
-    /// the target word
-    word: String,
-}
-
-impl Args {
-    fn lowercase_word(&self) -> Cow<str> {
-        if self.word.bytes().any(|u| !u.is_ascii_lowercase()) {
-            Cow::Owned(self.word.to_ascii_lowercase())
-        } else {
-            Cow::Borrowed(&self.word)
-        }
-    }
+    /// target words
+    target_words: Vec<String>,
 }
 
 fn main() {
@@ -32,7 +22,6 @@ fn main() {
 }
 
 fn run(args: &Args) -> io::Result<()> {
-    let word = args.lowercase_word();
     let text = fs::read_to_string(&args.path)?;
 
     let mut total_count = 0;
@@ -44,10 +33,16 @@ fn run(args: &Args) -> io::Result<()> {
         .map(|s| s.trim().to_ascii_lowercase());
 
     let token_count = count_tokens(tokens);
-    let target_word_count = token_count.get(&*word).unwrap();
+    let target_word_counts = args.target_words.iter().map(|s| {
+        let word = s.to_ascii_lowercase();
+        let count = token_count.get(&word).copied().unwrap_or_default();
+        (word, count)
+    });
 
-    println!("total word count: {total_count}\n{target_word_count}");
-    println!("(values are approximate)");
+    println!("total word count: {total_count}");
+    for (word, count) in target_word_counts {
+        println!("{word}: {count}");
+    }
 
     Ok(())
 }
