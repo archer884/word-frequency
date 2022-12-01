@@ -3,6 +3,7 @@ use std::{fs, io, process};
 use clap::Parser;
 use hashbrown::HashMap;
 use natural::tokenize::tokenize;
+use unicase::UniCase;
 
 #[derive(Debug, Parser)]
 #[command(version)]
@@ -30,11 +31,11 @@ fn run(args: &Args) -> io::Result<()> {
     let tokens = tokens
         .into_iter()
         .inspect(|_| total_count += 1)
-        .map(|s| s.trim().to_ascii_lowercase());
+        .map(|s| s.trim());
 
     let token_count = count_tokens(tokens);
     let target_word_counts = args.target_words.iter().map(|s| {
-        let word = s.to_ascii_lowercase();
+        let word = UniCase::new(s.as_ref());
         let count = token_count.get(&word).copied().unwrap_or_default();
         (word, count)
     });
@@ -47,10 +48,10 @@ fn run(args: &Args) -> io::Result<()> {
     Ok(())
 }
 
-fn count_tokens(tokens: impl IntoIterator<Item = String>) -> HashMap<String, usize> {
+fn count_tokens<'a>(tokens: impl IntoIterator<Item = &'a str>) -> HashMap<UniCase<&'a str>, usize> {
     let mut token_count = HashMap::new();
     for token in tokens {
-        *token_count.entry(token).or_default() += 1;
+        *token_count.entry(UniCase::new(token)).or_default() += 1;
     }
     token_count
 }

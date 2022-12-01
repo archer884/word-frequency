@@ -9,3 +9,4 @@ edition = "2021"
 clap = { version = "4.0.18", features = ["wrap_help", "derive"] }
 hashbrown = "0.12.3"
 natural = "0.5.0"
+unicase = "2.6.0"
